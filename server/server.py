@@ -14,7 +14,7 @@ def main():
         print("New connection from:", address)
         data = client.recv(1024)
         print(f"Client: {data.decode()}")
-        client.send("Welcome to the server!".encode())
+        client.send(f"Welcome to the server {data.decode()}!".encode())
 
     print("Listening on port", port)
 
