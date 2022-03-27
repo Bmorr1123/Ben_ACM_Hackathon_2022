@@ -76,7 +76,6 @@ def main():
         con = Connection(client)
         con.getName()
         print("New user called", con.getNames()[0])
-        con.run()
         game_server.connections.append(con)
 
     print("Listening on port", port)
