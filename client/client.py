@@ -11,7 +11,7 @@ def main():
     con = Connection(ip, port)
     con.connect()
     con.send(name)
-    data = con.recieve()
+    data = con.receive()
     print(data)
 
 
