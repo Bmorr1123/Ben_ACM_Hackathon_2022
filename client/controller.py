@@ -26,6 +26,7 @@ def main():
 
         for event in events:
             if event.type == pygame.QUIT:
+                states[current_state].on_quit()
                 looping = False
             if event.type == gui_states.GUISTATE_SWITCH:
                 state_type = event.state_type

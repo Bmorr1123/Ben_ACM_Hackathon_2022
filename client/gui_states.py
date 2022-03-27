@@ -10,8 +10,8 @@ GUISTATE_SWITCH = pygame.event.custom_type()
 
 
 class GUIState(ABC):
-    def __init__(self):
-        self.manager = gui.UIManager((WIDTH, HEIGHT))
+    def __init__(self, theme_path="res/base_theme.json"):
+        self.manager = gui.UIManager((WIDTH, HEIGHT), theme_path=theme_path, enable_live_theme_updates=True)
 
     def update(self, delta):
         self.manager.update(delta)
@@ -45,25 +45,34 @@ class GUIState(ABC):
 
 class MenuState(GUIState):
     def __init__(self):
-        super().__init__()
+        super().__init__("res/menu_theme.json")
 
         self.title = gui.elements.UILabel(
-            pygame.Rect(WIDTH * 0.1, HEIGHT * 0.1, HEIGHT * 0.8, HEIGHT * 0.3),
-            "Snek", self.manager
+            pygame.Rect(WIDTH * 0.1, HEIGHT * 0.1, WIDTH * 0.8, HEIGHT * 0.3),
+            "SNEK", self.manager
         )
 
-        self.play_button = gui.elements.UIButton(
+        self.host_button = gui.elements.UIButton(
             pygame.Rect(WIDTH * .25, HEIGHT * .4, WIDTH * .5, HEIGHT * .2),
-            "PLAY", self.manager
+            "Host", self.manager
+        )
+
+        self.join_button = gui.elements.UIButton(
+            pygame.Rect(WIDTH * .25, HEIGHT * .65, WIDTH * .5, HEIGHT * .2),
+            "Join", self.manager
         )
 
     def handle_event(self, event, mods):
         if event.type == gui.UI_BUTTON_PRESSED:
-            if event.ui_element == self.play_button:
-                switch = pygame.event.Event(
+            button = event.ui_element
+            if button == self.host_button:
+                pygame.event.post(pygame.event.Event(
                     GUISTATE_SWITCH, state_type=GameState
-                )
-                pygame.event.post(switch)
+                ))
+            elif button == self.join_button:
+                pygame.event.post(pygame.event.Event(
+                    GUISTATE_SWITCH, state_type=JoinState
+                ))
 
     def tick(self, delta):
         ...
@@ -85,7 +94,12 @@ class GameState(GUIState):
         )
 
     def handle_event(self, event, mods):
-        pass
+        if event.type == pygame.KEYUP:
+            key = event.key
+            if key == pygame.K_ESCAPE:
+                pygame.event.post(pygame.event.Event(
+                    GUISTATE_SWITCH, state_type=MenuState
+                ))
 
     def tick(self, delta):
         self.f3_text.set_text(f"fps: {1 / delta:.2f}")
@@ -95,6 +109,50 @@ class GameState(GUIState):
         for i in range(1, 100):
             pygame.draw.line(win, (255, 255, 255), (i * grid_x, 0), (i * grid_x, HEIGHT))
             pygame.draw.line(win, (255, 255, 255), (0, i * grid_y), (HEIGHT, i * grid_y))
+
+    def on_quit(self):
+        ...
+
+
+class JoinState(GUIState):
+    def __init__(self):
+        super().__init__()
+
+        self.label = gui.elements.UILabel(
+            pygame.Rect(WIDTH * 0.1, HEIGHT * 0.1, WIDTH * 0.9, HEIGHT * 0.1),
+            "Server IP:", self.manager,
+            object_id=gui.core.ObjectID("join_label", class_id="#medium_font_style")
+        )
+
+        self.ip_field = gui.elements.UITextEntryLine(
+            pygame.Rect(WIDTH * .1, HEIGHT * .45, WIDTH * .7, HEIGHT * .1),
+            self.manager, object_id=gui.core.ObjectID("ip_entry", class_id="#large_font_style")
+        )
+
+        self.join_button = gui.elements.UIButton(
+            pygame.Rect(WIDTH * .8, HEIGHT * .45, WIDTH * .1, HEIGHT * .1),
+            "Join", self.manager, object_id=gui.core.ObjectID("join", class_id="#small_font_style")
+        )
+
+    def handle_event(self, event, mods):
+        if event.type == gui.UI_BUTTON_PRESSED:
+            if event.ui_element == self.join_button:
+                switch = pygame.event.Event(
+                    GUISTATE_SWITCH, state_type=GameState
+                )
+                pygame.event.post(switch)
+        elif event.type == pygame.KEYUP:
+            key = event.key
+            if key == pygame.K_ESCAPE:
+                pygame.event.post(pygame.event.Event(
+                    GUISTATE_SWITCH, state_type=MenuState
+                ))
+
+    def tick(self, delta):
+        ...
+
+    def draw(self, win):
+        ...
 
     def on_quit(self):
         ...
