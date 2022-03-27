@@ -122,5 +122,17 @@
             "unfilled_bar":"#CCCCCC"
         },
         "prototype": "#medium_font_style"
+    },
+    "ip_label": {
+        "misc": {
+            "text_horiz_alignment": "left",
+            "text_vert_alignment": "bottom"
+        }
+    },
+    "title": {
+        "prototype": "#xlarge_font_style",
+         "misc":
+         {
+         }
     }
 }

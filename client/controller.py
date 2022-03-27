@@ -29,17 +29,20 @@ def main():
                 states[current_state].on_quit()
                 looping = False
             if event.type == gui_states.GUISTATE_SWITCH:
-                state_type = event.state_type
+                STATE_TYPE = event.state_type
+                params = []
+                if STATE_TYPE == gui_states.GameState:
+                    params.append(event.ip)
 
                 found_state = False
                 # Looking for state of this type
                 for i in range(len(states)):
-                    if isinstance(states[i], state_type):
+                    if isinstance(states[i], STATE_TYPE):
                         current_state = i
                         found_state = True
 
                 if not found_state:
-                    states.append(event.state_type())
+                    states.append(event.state_type(*params))
                     current_state = len(states) - 1
                     print(states, current_state)
 
