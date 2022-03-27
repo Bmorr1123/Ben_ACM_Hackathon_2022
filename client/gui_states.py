@@ -2,9 +2,9 @@ import pygame
 from pygame.display import get_window_size as size
 import pygame_gui as gui
 from abc import *
-from snake import Snake
+from client.snake import Snake
 from pygame._sdl2 import controller as con
-import connection
+import client.connection
 
 
 WIDTH, HEIGHT = size()
@@ -89,7 +89,7 @@ class MenuState(GUIState):
                 ))
 
                 pygame.event.post(pygame.event.Event(
-                    GUISTATE_SWITCH, state_type=GameState, ip=connection.Connection.LOCALHOST, username="Host"
+                    GUISTATE_SWITCH, state_type=GameState, ip=client.connection.Connection.LOCALHOST, username="Host"
                 ))
             elif button == self.join_button:
                 pygame.event.post(pygame.event.Event(
@@ -116,7 +116,7 @@ class GameState(GUIState):
     def __init__(self, ip, name):
         super().__init__()
 
-        self.connection = connection.Connection(ip, 3369, name)
+        self.connection = client.connection.Connection(ip, 3369, name)
 
         inputs = [con.Controller(index) for index in range(con.get_count())]
 

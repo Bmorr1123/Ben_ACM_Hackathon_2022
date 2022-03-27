@@ -1,4 +1,3 @@
-import client
-import connection
-import gui_states
-import snake
+import client.connection
+import client.gui_states
+import client.snake

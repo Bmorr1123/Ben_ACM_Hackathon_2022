@@ -16,7 +16,7 @@ clock = pygame.time.Clock()
 pygame.display.set_caption(game_name)
 
 
-import gui_states
+import client.gui_states as gui_states
 import server.server
 
 
