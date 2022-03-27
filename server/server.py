@@ -130,7 +130,7 @@ class ConnectionServer(threading.Thread):
 
     def run(self):
         if platform == "linux" or platform == "linux2":
-            signal(signal.SIGPIPE, signal.SIG_DFL)
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
         port = 3369
         running = True
 
