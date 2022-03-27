@@ -99,7 +99,6 @@ class GameServer(threading.Thread):
         self.apples.append(pos)
 
     def send_all_client(self, message):
-        print(message)
         for connection, snake in self.connections:
             connection.send(message)
 
@@ -123,6 +122,28 @@ class GameServer(threading.Thread):
         return None
 
 
+class MultiServer(threading.Thread):
+    def __init__(self, ip, port, game_server):
+        super().__init__()
+        self.ip, self.port = ip, port
+        self.game_server = game_server
+
+    def run(self):
+        server = socket.socket()
+        ip, port = self.ip, self.port
+
+        server.bind((ip, port))
+        server.listen(69420)
+
+        print("Listening on port", port)
+        print("Listening on ip", ip)
+
+        while True:
+            client, address = server.accept()
+            con = sc.Connection(client)
+            print("New user called", con.getNames()[0])
+            self.game_server.add_connection(con)
+
 class ConnectionServer(threading.Thread):
     def __init__(self):
         super().__init__()
@@ -131,25 +152,18 @@ class ConnectionServer(threading.Thread):
         if platform == "linux" or platform == "linux2":
             signal.signal(signal.SIGPIPE, signal.SIG_DFL)
         port = 3369
-        running = True
 
         game_server = GameServer()
         game_server.start()
 
-        server = socket.socket()
-        hostname = socket.gethostname()
-        ip = socket.gethostbyname(hostname)
-        server.bind((ip, port))
-        server.listen(69420)
-
-        print("Listening on port", port)
-        print("Listening on ip", ip)
-
-        while running:
-            client, address = server.accept()
-            con = sc.Connection(client)
-            print("New user called", con.getNames()[0])
-            game_server.add_connection(con)
+        hostnames = [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
+        for hostname in hostnames:
+            try:
+                ip = socket.gethostbyname(hostname)
+                ms = MultiServer(ip, port, game_server)
+                ms.start()
+            except socket.gaierror:
+                pass
 
 
 def main():
