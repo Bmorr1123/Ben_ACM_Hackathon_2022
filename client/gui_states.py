@@ -178,7 +178,7 @@ class GameState(GUIState):
                 uuid, name, direction, pos = args[1], args[2], int(args[3]), (int(args[4]), int(args[5]))
                 snek = Snake(uuid, name, pos, direction)
                 for i in range(6, len(args), 2):
-                    snek.body.append((args[i], args[i + 1]))
+                    snek.body.append((int(args[i]), int(args[i + 1])))
                 self.snakes.append(snek)
                 if uuid == self.connection.uuid:
                     self.my_snake = snek
