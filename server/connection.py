@@ -17,6 +17,7 @@ class Connection:
         else:
             self.uuid = uuid
             Connection.uuids.append(self.uuid)
+            self.send(self.uuid)
 
     def getNames(self):
         return self.name, self.uuid

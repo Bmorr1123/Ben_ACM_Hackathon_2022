@@ -4,10 +4,12 @@ import socket
 
 class Connection():
 
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, name):
         self.connection = None
         self.ip = ip
         self.port = port
+        self.name = name
+        self.uuid = None
         super().__init__()
 
     def connect(self):
