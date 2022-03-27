@@ -135,7 +135,7 @@ class ConnectionServer(threading.Thread):
         game_server.start()
 
         server = socket.socket()
-        server.bind(("localhost", port))
+        server.bind(("25.88.17.131", port))
         server.listen(69420)
 
         while running:

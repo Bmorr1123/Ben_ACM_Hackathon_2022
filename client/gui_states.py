@@ -78,7 +78,7 @@ class MenuState(GUIState):
                 host.start()
 
                 pygame.event.post(pygame.event.Event(
-                    GUISTATE_SWITCH, state_type=GameState, ip="localhost", username="Host"
+                    GUISTATE_SWITCH, state_type=GameState, ip="25.88.17.131", username="Host"
                 ))
             elif button == self.join_button:
                 pygame.event.post(pygame.event.Event(
@@ -171,8 +171,9 @@ class GameState(GUIState):
                 if snek:
                     print("MURDERED SNAKE")
                     self.snakes.remove(snek)
-                    if uuid == self.my_snake.uuid:
-                        self.my_snake = None
+                    if self.my_snake
+                        if uuid == self.my_snake.uuid:
+                            self.my_snake = None
 
             elif args[0] == "snake":
                 uuid, name, direction, pos = args[1], args[2], int(args[3]), (int(args[4]), int(args[5]))
