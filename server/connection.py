@@ -1,3 +1,7 @@
+import socket
+from random import randint
+
+
 class Connection:
     uuids = []
 
@@ -6,31 +10,47 @@ class Connection:
         self.client = client
         self.name = ""
         self.uuid = ""
-        self.client.setdefaulttimeout(0)
+        self.string = ""
+
+        data: str = self.client.recv(1024).decode()
+        self.setName(data.strip())
+        color = [randint(0, 255) for i in range(3)]
+        while sum(color) / 3 < 100:
+            color = [randint(0, 255) for i in range(3)]
+
+        self.send(" ".join([str(i) for i in color]))
+
+        self.client.settimeout(0.01)
 
     def setName(self, name):
         self.name = name
-        uuid = name
-        if name in Connection.uuids:
-            new_name = name + "1"
-            self.setName(name, new_name)
-            pass
-        else:
-            self.uuid = uuid
-            Connection.uuids.append(self.uuid)
-            self.send(self.uuid)
+        i = 0
+        while (uuid := f"{name}{i}") in Connection.uuids:
+            i += 1
+
+        self.uuid = uuid
+        Connection.uuids.append(self.uuid)
+        self.send(self.uuid)
 
     def getNames(self):
         return self.name, self.uuid
 
-    def getName(self):
-        data: str = self.client.recv(1024).decode()
-        self.setName(data.strip())
-        return self.name
-
     def send(self, message):
-        self.client.send(message.encode())
+        self.client.send(f"{message}\n".encode())
 
     def receive(self):
-        # TODO: Check if we need to .split("\n")
-        return self.client.recv(1024).decode()
+        if self.string:  # If there is already data queued, return that.
+            data, self.string = self.string.split("\n", 1)
+            return data
+
+        try:
+            data = self.client.recv(1024).decode()
+            if "\n" in data:
+                data = data.split("\n", 1)
+                self.string += data[1]
+                return data[0].replace("\n", "")
+
+            return data
+        except socket.timeout:
+            return ""
+

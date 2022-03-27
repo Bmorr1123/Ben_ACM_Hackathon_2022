@@ -24,8 +24,8 @@ class Snake:
         elif self.direction == 3:
             y += 1
 
-        self.body.append((head[0] + x, head[1] + y))
-        if len(self.body) > self.length:
-            self.body.pop(0)
+        # print(x, y)
+
+        return head[0] + x, head[1] + y
 
 

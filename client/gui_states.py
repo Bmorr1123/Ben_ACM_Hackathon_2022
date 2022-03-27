@@ -100,7 +100,6 @@ class GameState(GUIState):
         super().__init__()
 
         self.connection = Connection(ip, 3369, name)
-        self.connection.connect()
 
         self.f3_text = gui.elements.UILabel(
             pygame.Rect(0, 0, -1, -1),
@@ -111,9 +110,27 @@ class GameState(GUIState):
             ip, self.manager
         )
 
-        self.snakes = [Snake(self.connection.uuid, (50, 50), 1)]
+        self.my_snake = None
+        self.snakes = []
+        self.apples = []
 
     def handle_event(self, event, mods):
+
+        if event.type == pygame.KEYDOWN:
+            key = event.key
+            if self.my_snake:
+                direction = -1
+                if key == pygame.K_UP or key == pygame.K_w:
+                    direction = 2
+                elif key == pygame.K_LEFT or key == pygame.K_a:
+                    direction = 1
+                elif key == pygame.K_DOWN or key == pygame.K_s:
+                    direction = 3
+                elif key == pygame.K_RIGHT or key == pygame.K_d:
+                    direction = 0
+                if direction != -1:
+                    self.connection.send(f"#turn {direction}")
+
         if event.type == pygame.KEYUP:
             key = event.key
             if key == pygame.K_ESCAPE:
@@ -121,8 +138,61 @@ class GameState(GUIState):
                     GUISTATE_SWITCH, state_type=MenuState
                 ))
 
+            if key == pygame.K_SPACE:
+                if not self.my_snake:
+                    self.connection.send("join")
+
     def tick(self, delta):
         self.f3_text.set_text(f"fps: {1 / delta:.2f}")
+        self.receive()
+
+    def receive(self):
+        info = self.connection.receive()
+        if not info:
+            return
+        if info[0] == "#":
+            args = info[1:].split(" ")
+            if args[0] == "apple":
+                uuid, pos = args[1], (int(args[2]), int(args[3]))
+                if pos in self.apples:
+                    self.apples.remove(pos)
+                for snake in self.snakes:
+                    if snake.uuid == uuid:
+                        snake.length += 1
+
+            elif args[0] == "new_apple":
+                pos = (int(args[1]), int(args[2]))
+                if pos not in self.apples:
+                    self.apples.append(pos)
+
+            elif args[0] == "death":
+                uuid = args[1]
+                snek = self.find_snake(uuid)
+                if snek:
+                    print("MURDERED SNAKE")
+                    self.snakes.remove(snek)
+                    if uuid == self.my_snake.uuid:
+                        self.my_snake = None
+
+            elif args[0] == "snake":
+                uuid, name, direction, pos = args[1], args[2], int(args[3]), (int(args[4]), int(args[5]))
+                snek = Snake(uuid, name, pos, direction)
+                for i in range(6, len(args), 2):
+                    snek.body.append((args[i], args[i + 1]))
+                self.snakes.append(snek)
+                if uuid == self.connection.uuid:
+                    self.my_snake = snek
+
+            elif args[0] == "turn":
+                uuid, direction = args[1], int(args[2])
+                print("Received Turn", direction)
+                for snake in self.snakes:
+                    if snake.uuid == uuid:
+                        snake.direction = direction
+
+        if info == "tick":
+            for snake in self.snakes:
+                snake.tick()
 
     def draw(self, win):
         grid_x, grid_y = WIDTH // 100, HEIGHT // 100
@@ -130,9 +200,19 @@ class GameState(GUIState):
             pygame.draw.line(win, (0, 0, 0), (i * grid_x, 0), (i * grid_x, HEIGHT))
             pygame.draw.line(win, (0, 0, 0), (0, i * grid_y), (HEIGHT, i * grid_y))
 
+        for pos in self.apples:
+            pygame.draw.rect(win, (255, 0, 0), (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
+
         for snake in self.snakes:
             for i, pos in enumerate(snake.body):
-                pygame.draw.rect(win, (0, 0, 255), (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
+                color = self.connection.color if snake == self.my_snake else (100, 100, 100)
+                pygame.draw.rect(win, color, (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
+
+    def find_snake(self, uuid):
+        for snake in self.snakes:
+            if snake.uuid == uuid:
+                return snake
+        return None
 
     def on_quit(self):
         ...

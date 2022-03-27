@@ -1,6 +1,8 @@
 class Snake:
-    def __init__(self, uuid, pos, direction):
+    def __init__(self, uuid, name, pos, direction):
         self.uuid = uuid
+        self.name = name
+
         self.body = [pos]
         self.direction = direction
         self.length = 3
@@ -23,6 +25,8 @@ class Snake:
         # Down
         elif self.direction == 3:
             y += 1
+
+        # print(x, y)
 
         self.body.append((head[0] + x, head[1] + y))
         if len(self.body) > self.length:

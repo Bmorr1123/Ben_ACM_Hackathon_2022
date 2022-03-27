@@ -1,13 +1,13 @@
 import socket
-from connection import Connection
+import server.connection as sc
 import threading
-from snake import Snake
+import server.snake as ss
 from random import randint
 import time
 
 
 class GameServer(threading.Thread):
-    time_step = 1 / 5
+    time_step = 1/5
 
     def __init__(self):
         super().__init__()
@@ -20,6 +20,13 @@ class GameServer(threading.Thread):
 
     def add_connection(self, connection):
         self.connections.append([connection, None])
+        for pos in self.apples:
+            connection.send(f"#new_apple {pos[0]} {pos[1]}")
+        for connection, snake in self.connections:
+            if snake:
+                string = f"#snake {connection.uuid} {connection.name} {snake.direction} "
+                string += " ".join([f"{pos[0]} {pos[1]}" for pos in snake.body])
+                connection.send(string)
 
     def run(self):
         self.time = time.time()
@@ -34,25 +41,27 @@ class GameServer(threading.Thread):
         do_tick = self.game_time > GameServer.time_step
         if do_tick:
             self.game_time -= GameServer.time_step
+            while len(self.apples) < len(self.connections):
+                self.create_apple(self.get_empty_pos())
 
         for i, (connection, snake) in enumerate(self.connections):
 
             # Connection Handling
             info: str = connection.receive()
-            if info.startswith("#") and snake:  # Does # only if client has a snake
-                args = info[1:].split(" ")
+            if info:
+                if info[0] and snake:  # Does # only if client has a snake
+                    args = info[1:].split(" ")
 
-                if args[1] == "turn":
-                    snake.direction = int(args[2])
-                    self.send_all_client(f"#turn {snake.uuid} {snake.direction}")
+                    if args[0] == "turn":
+                        snake.direction = int(args[1])
+                        self.send_all_client(f"#turn {snake.uuid} {snake.direction}")
 
-            elif info == "join":
-                self.connections[i][1] = self.create_snake(connection)
+                elif info == "join":
+                    self.connections[i][1] = self.create_snake(connection)
 
             # Game Handling
-            if do_tick:
-                snake.tick()
-                head = snake.get_head()
+            if do_tick and snake:
+                head = snake.tick()
                 collision_obj = self.get_pos(head)
 
                 if collision_obj == "apple":
@@ -60,22 +69,32 @@ class GameServer(threading.Thread):
                     self.apples.remove(head)
 
                 elif collision_obj == "body":
+                    self.connections[i][1] = None
                     self.send_all_client(f"#death {snake.uuid}")
                     for pos in snake.body:
                         if not randint(0, 3):
                             self.create_apple(pos)
 
+                else:
+                    snake.body.append(head)
+                    while len(snake.body) > snake.length:
+                        snake.body.pop(0)
+
+        if do_tick:
+            self.send_all_client("tick")
+
     def create_snake(self, connection):
         pos = self.get_empty_pos()
         direction = randint(0, 3)
-        self.send_all_client(f"#snake {connection.uuid} {connection.name} {pos[0]} {pos[1]} {direction}")
-        return Snake(connection.uuid, pos, direction)
+        self.send_all_client(f"#snake {connection.uuid} {connection.name} {direction} {pos[0]} {pos[1]}")
+        return ss.Snake(connection.uuid, pos, direction)
 
     def create_apple(self, pos):
         self.send_all_client(f"#new_apple {pos[0]} {pos[1]}")
         self.apples.append(pos)
 
     def send_all_client(self, message):
+        # print(message)
         for connection, snake in self.connections:
             connection.send(message)
 
@@ -89,8 +108,9 @@ class GameServer(threading.Thread):
             return "apple"
 
         for connection, snake in self.connections:
-            if pos in snake.body:
-                return "body"
+            if snake:
+                if pos in snake.body:
+                    return "body"
 
         if not (0 <= pos[0] < 100 and 0 <= pos[1] < 100):
             return "body"
@@ -115,11 +135,10 @@ class ConnectionServer(threading.Thread):
 
         while running:
             client, address = server.accept()
-            con = Connection(client)
-            con.getName()
+            con = sc.Connection(client)
             print("New user called", con.getNames()[0])
-            game_server.connections.append(con)
-            con.send(" ".join([str(randint(100, 255)) for i in range(3)]))
+            game_server.add_connection(con)
+
 
         print("Listening on port", port)
 
