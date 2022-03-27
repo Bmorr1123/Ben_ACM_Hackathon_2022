@@ -6,13 +6,14 @@ except ModuleNotFoundError:
     import connection as sc
     import snake as ss
 import threading
-
+import signal
+from sys import platform
 from random import randint
 import time
 
 
 class GameServer(threading.Thread):
-    time_step = 1/5
+    time_step = 1 / 5
 
     def __init__(self):
         super().__init__()
@@ -128,6 +129,8 @@ class ConnectionServer(threading.Thread):
         super().__init__()
 
     def run(self):
+        if platform == "linux" or platform == "linux2":
+            signal(signal.SIGPIPE, signal.SIG_DFL)
         port = 3369
         running = True
 
@@ -148,9 +151,6 @@ class ConnectionServer(threading.Thread):
             con = sc.Connection(client)
             print("New user called", con.getNames()[0])
             game_server.add_connection(con)
-
-
-
 
 
 def main():
