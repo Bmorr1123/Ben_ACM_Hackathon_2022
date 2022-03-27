@@ -14,13 +14,16 @@ class Connection:
 
         data: str = self.client.recv(1024).decode()
         self.setName(data.strip())
-        color = [randint(0, 255) for i in range(3)]
-        while sum(color) / 3 < 100:
-            color = [randint(0, 255) for i in range(3)]
 
-        self.send(" ".join([str(i) for i in color]))
+        rec = self.receive()
+        print(rec)
+        colors = [int(i) for i in rec.split(" ")]
+        print(colors)
+        self.colors = [colors[i:i + 3] for i in range(0, int(len(colors)), 3)]
+        print(self.colors)
 
         self.client.settimeout(0.005)
+        self.alive = True
 
     def setName(self, name):
         self.name = name
@@ -52,5 +55,8 @@ class Connection:
 
             return data
         except socket.timeout:
+            return ""
+        except (ConnectionAbortedError, ConnectionResetError):
+            self.alive = False
             return ""
 

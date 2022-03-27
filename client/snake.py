@@ -5,7 +5,9 @@ class Snake:
 
         self.body = [pos]
         self.direction = direction
-        self.length = 3
+        self.length = 6
+
+        self.colors = [[100, 100, 100]]
 
         self.ticks = 0
 
@@ -25,7 +27,7 @@ class Snake:
         elif self.direction == 3:
             y -= 1
 
-        print(f"Client: {self.ticks} {(head[0] + x, head[1] + y)}")
+        # print(f"Client: {self.ticks} {(head[0] + x, head[1] + y)}")
 
         self.body.append((head[0] + x, head[1] + y))
         if len(self.body) > self.length:

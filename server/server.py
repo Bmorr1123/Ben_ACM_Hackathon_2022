@@ -30,8 +30,9 @@ class GameServer(threading.Thread):
             connection.send(f"#new_apple {pos[0]} {pos[1]}")
         for connection, snake in self.connections:
             if snake:
-                string = f"#snake {connection.uuid} {connection.name} {snake.direction} "
-                string += " ".join([f"{pos[0]} {pos[1]}" for pos in snake.body])
+                string = f"#snake {connection.uuid} {connection.name} {snake.direction} {snake.length} {len(connection.colors)} "
+                string += " ".join([f"{c[0]} {c[1]} {c[2]}" for c in connection.colors])
+                string += " " + " ".join([f"{pos[0]} {pos[1]}" for pos in snake.body])
                 connection.send(string)
 
     def run(self):
@@ -44,6 +45,14 @@ class GameServer(threading.Thread):
 
     def tick(self, delta):
         self.game_time += delta
+
+        # This handles dead connections
+        i = 0
+        while i < len(self.connections):
+            if not self.connections[i][0].alive:
+                self.connections.pop(i)
+            else:
+                i += 1
 
         for i, (connection, snake) in enumerate(self.connections):
 
@@ -78,8 +87,8 @@ class GameServer(threading.Thread):
                     elif collision_obj == "body":
                         self.connections[i][1] = None
                         self.send_all_client(f"#death {snake.uuid}")
-                        for pos in snake.body:
-                            if not randint(0, 3):
+                        for j, pos in enumerate(snake.body):
+                            if j % 2:
                                 self.create_apple(pos)
 
                     snake.body.append(head)
@@ -91,14 +100,21 @@ class GameServer(threading.Thread):
     def create_snake(self, connection):
         pos = self.get_empty_pos()
         direction = randint(0, 3)
-        self.send_all_client(f"#snake {connection.uuid} {connection.name} {direction} {pos[0]} {pos[1]}")
-        return ss.Snake(connection.uuid, pos, direction)
+        snake = ss.Snake(connection.uuid, pos, direction)
+
+        string = f"#snake {connection.uuid} {connection.name} {snake.direction} {snake.length} {len(connection.colors)} "
+        string += " ".join([f"{c[0]} {c[1]} {c[2]}" for c in connection.colors])
+        string += " " + " ".join([f"{pos[0]} {pos[1]}" for pos in snake.body])
+
+        connection.send(string)
+        return snake
 
     def create_apple(self, pos):
         self.send_all_client(f"#new_apple {pos[0]} {pos[1]}")
         self.apples.append(pos)
 
     def send_all_client(self, message):
+        print(f"->ALL: {message}")
         for connection, snake in self.connections:
             connection.send(message)
 

@@ -1,6 +1,7 @@
 import pygame
 from pygame import joystick
 from pygame._sdl2 import controller
+from random import randint
 
 pygame.init()
 joystick.init()

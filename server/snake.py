@@ -3,7 +3,7 @@ class Snake:
         self.uuid = uuid
         self.body = [pos]
         self.direction = direction
-        self.length = 3
+        self.length = 6
 
         self.ticks = 0
 
@@ -25,7 +25,7 @@ class Snake:
 
         # print(x, y)
         new_head = head[0] + x, head[1] + y
-        print(f"\nServer: {self.ticks} {new_head}")
+        # print(f"\nServer: {self.ticks} {new_head}")
         self.ticks += 1
         return new_head
 

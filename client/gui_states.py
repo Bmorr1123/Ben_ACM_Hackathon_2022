@@ -173,8 +173,7 @@ class GameState(GUIState):
 
                 elif args[0] == "death":
                     uuid = args[1]
-                    snek = self.find_snake(uuid)
-                    if snek:
+                    while snek := self.find_snake(uuid):
                         print("MURDERED SNAKE")
                         self.snakes.remove(snek)
                         if self.my_snake:
@@ -182,13 +181,7 @@ class GameState(GUIState):
                                 self.my_snake = None
 
                 elif args[0] == "snake":
-                    uuid, name, direction, pos = args[1], args[2], int(args[3]), (int(args[4]), int(args[5]))
-                    snek = Snake(uuid, name, pos, direction)
-                    for i in range(6, len(args), 2):
-                        snek.body.append((int(args[i]), int(args[i + 1])))
-                    self.snakes.append(snek)
-                    if uuid == self.connection.uuid:
-                        self.my_snake = snek
+                    self.add_snake(args)
 
                 elif args[0] == "turn":
                     uuid, direction = args[1], int(args[2])
@@ -214,15 +207,35 @@ class GameState(GUIState):
             pygame.draw.rect(win, (255, 0, 0), (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
 
         for snake in self.snakes:
-            for i, pos in enumerate(snake.body):
-                color = self.connection.color if snake == self.my_snake else (100, 100, 100)
-                pygame.draw.rect(win, color, (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
+            for i, pos in enumerate(reversed(snake.body)):
+                pygame.draw.rect(win, snake.colors[i % len(snake.colors)], (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
 
     def find_snake(self, uuid):
         for snake in self.snakes:
             if snake.uuid == uuid:
                 return snake
         return None
+
+    def add_snake(self, args):
+        uuid, name, direction, length, count = args[1], args[2], int(args[3]), int(args[4]), int(args[5])
+        args = args[6:]
+
+        colors = []
+        for i in range(count):
+            colors.append([int(args.pop(0)) for i in range(3)])
+
+        body = []
+        while len(args) > 1:
+            body.append([int(args.pop(0)) for i in range(2)])
+
+        snek = Snake(uuid, name, body[-1], direction)
+        snek.length = length
+        snek.colors = colors
+
+        if uuid == self.connection.uuid:
+            self.my_snake = snek
+
+        self.snakes.append(snek)
 
     def on_quit(self):
         ...

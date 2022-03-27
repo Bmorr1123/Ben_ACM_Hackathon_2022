@@ -1,3 +1,4 @@
+import json
 import threading
 import socket
 
@@ -20,7 +21,11 @@ class Connection:
         self.string = ""
 
         self.uuid = self.receive()
-        self.color = [int(i) for i in self.receive().split(" ")]
+
+        with open("res/colors.json") as file:
+            data = json.load(file)
+            self.send(" ".join([f"{i[0]} {i[1]} {i[2]}" for i in data]))
+
         self.connection.settimeout(0.01)
 
     def send(self, message):
