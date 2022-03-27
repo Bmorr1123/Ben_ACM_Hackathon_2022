@@ -1,7 +1,7 @@
 import socket
 
 
-class Connection:
+class ServerConnection:
     uuids = []
 
     def __init__(self, client):
@@ -24,11 +24,11 @@ class Connection:
     def setName(self, name):
         self.name = name
         i = 0
-        while (uuid := f"{name}{i}") in Connection.uuids:
+        while (uuid := f"{name}{i}") in ServerConnection.uuids:
             i += 1
 
         self.uuid = uuid
-        Connection.uuids.append(self.uuid)
+        ServerConnection.uuids.append(self.uuid)
         self.send(self.uuid)
 
     def getNames(self):

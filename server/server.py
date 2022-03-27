@@ -1,10 +1,11 @@
 import socket
 try:
-    import server.connection as sc
-    import server.snake as ss
+    import server.serverconnection as sc
+    import server.serversnake as ss
 except ModuleNotFoundError:
-    import connection as sc
-    import snake as ss
+    import serverconnection as sc
+    import serversnake as ss
+
 import threading
 import signal
 from sys import platform
@@ -101,7 +102,7 @@ class GameServer(threading.Thread):
     def create_snake(self, connection):
         pos = self.get_spread_pos()
         direction = randint(0, 3)
-        snake = ss.Snake(connection.uuid, pos, direction)
+        snake = ss.ServerSnake(connection.uuid, pos, direction)
 
         string = f"#snake {connection.uuid} {connection.name} {snake.direction} {snake.length} {len(connection.colors)} "
         string += " ".join([f"{c[0]} {c[1]} {c[2]}" for c in connection.colors])
@@ -163,12 +164,11 @@ class MultiServer(threading.Thread):
         server.bind((ip, port))
         server.listen(69420)
 
-        print("Listening on port", port)
-        print("Listening on ip", ip)
+        print(f"Listening on {ip}:{port}")
 
         while True:
             client, address = server.accept()
-            con = sc.Connection(client)
+            con = sc.ServerConnection(client)
             print("New user called", con.getNames()[0])
             self.game_server.add_connection(con)
 

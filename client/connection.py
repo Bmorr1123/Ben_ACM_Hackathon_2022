@@ -23,7 +23,7 @@ class Connection:
 
         self.uuid = self.receive()
 
-        with open("res/colors.json") as file:
+        with open("client/res/colors.json") as file:
             data = json.load(file)
             self.send(" ".join([f"{i[0]} {i[1]} {i[2]}" for i in data]))
 

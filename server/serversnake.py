@@ -1,4 +1,4 @@
-class Snake:
+class ServerSnake:
     def __init__(self, uuid, pos, direction):
         self.uuid = uuid
         self.body = [pos]

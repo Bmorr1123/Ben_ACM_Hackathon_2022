@@ -2,19 +2,19 @@ import pygame
 from pygame.display import get_window_size as size
 import pygame_gui as gui
 from abc import *
-from connection import Connection
 from snake import Snake
-from server.server import ConnectionServer
 from pygame._sdl2 import controller as con
+import connection
 
 
 WIDTH, HEIGHT = size()
 
+HAIL_SERVER = pygame.event.custom_type()
 GUISTATE_SWITCH = pygame.event.custom_type()
 
 
 class GUIState(ABC):
-    def __init__(self, theme_path="res/base_theme.json"):
+    def __init__(self, theme_path="client/res/base_theme.json"):
         self.manager = gui.UIManager((WIDTH, HEIGHT), theme_path=theme_path, enable_live_theme_updates=True)
         self.time = 0
 
@@ -72,11 +72,11 @@ class MenuState(GUIState):
 
         self.settings_button = gui.elements.UIButton(
             pygame.Rect(WIDTH * .25, HEIGHT * .7, WIDTH * .5, HEIGHT * .1),
-            "Settings", self.manager, object_id=gui.core.ObjectID("settings", "#large_font_style")
+            "Settings", self.manager, object_id=gui.core.ObjectID("settings", "#large_font_style"), visible=False
         )
 
         self.exit_button = gui.elements.UIButton(
-            pygame.Rect(WIDTH * .25, HEIGHT * .8, WIDTH * .5, HEIGHT * .1),
+            pygame.Rect(WIDTH * .25, HEIGHT * .7, WIDTH * .5, HEIGHT * .1),
             "Exit", self.manager, object_id=gui.core.ObjectID("exit", "#large_font_style")
         )
 
@@ -84,12 +84,12 @@ class MenuState(GUIState):
         if event.type == gui.UI_BUTTON_PRESSED:
             button = event.ui_element
             if button == self.host_button:
-
-                host = ConnectionServer()
-                host.start()
+                pygame.event.post(pygame.event.Event(
+                    HAIL_SERVER
+                ))
 
                 pygame.event.post(pygame.event.Event(
-                    GUISTATE_SWITCH, state_type=GameState, ip=Connection.LOCALHOST, username="Host"
+                    GUISTATE_SWITCH, state_type=GameState, ip=connection.Connection.LOCALHOST, username="Host"
                 ))
             elif button == self.join_button:
                 pygame.event.post(pygame.event.Event(
@@ -116,7 +116,7 @@ class GameState(GUIState):
     def __init__(self, ip, name):
         super().__init__()
 
-        self.connection = Connection(ip, 3369, name)
+        self.connection = connection.Connection(ip, 3369, name)
 
         inputs = [con.Controller(index) for index in range(con.get_count())]
 
