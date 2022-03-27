@@ -171,7 +171,7 @@ class GameState(GUIState):
                 if snek:
                     print("MURDERED SNAKE")
                     self.snakes.remove(snek)
-                    if self.my_snake
+                    if self.my_snake:
                         if uuid == self.my_snake.uuid:
                             self.my_snake = None
 
