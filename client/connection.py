@@ -19,6 +19,6 @@ class Connection():
     def send(self, message):
         self.connection.send(message.encode())
 
-    def recieve(self):
+    def receive(self):
         data = self.connection.recv(1024).decode()
         return data
