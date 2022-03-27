@@ -20,6 +20,7 @@ class Connection:
 
         self.uuid = self.receive()
         self.color = [int(i) for i in self.receive().split(" ")]
+        self.connection.settimeout(0.01)
 
     def send(self, message):
         self.connection.send(f"{message}\n".encode())
@@ -28,11 +29,13 @@ class Connection:
         if self.string:  # If there is already data queued, return that.
             data, self.string = self.string.split("\n", 1)
             return data
+        try:
+            data = self.connection.recv(1024).decode()
+            if "\n" in data:
+                data = data.split("\n", 1)
+                self.string += data[1]
+                return data[0].replace("\n", "")
 
-        data = self.connection.recv(1024).decode()
-        if "\n" in data:
-            data = data.split("\n", 1)
-            self.string += data[1]
-            return data[0].replace("\n", "")
-
-        return data
+            return data
+        except socket.timeout:
+            return ""

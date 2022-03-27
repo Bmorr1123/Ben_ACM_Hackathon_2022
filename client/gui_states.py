@@ -114,22 +114,29 @@ class GameState(GUIState):
         self.snakes = []
         self.apples = []
 
+        self.input_buffer = []
+
     def handle_event(self, event, mods):
 
         if event.type == pygame.KEYDOWN:
             key = event.key
             if self.my_snake:
                 direction = -1
-                if key == pygame.K_UP or key == pygame.K_w:
-                    direction = 2
-                elif key == pygame.K_LEFT or key == pygame.K_a:
-                    direction = 1
-                elif key == pygame.K_DOWN or key == pygame.K_s:
-                    direction = 3
-                elif key == pygame.K_RIGHT or key == pygame.K_d:
+                if key == pygame.K_LEFT or key == pygame.K_a:
                     direction = 0
-                if direction != -1:
-                    self.connection.send(f"#turn {direction}")
+                elif key == pygame.K_DOWN or key == pygame.K_s:
+                    direction = 1
+                elif key == pygame.K_RIGHT or key == pygame.K_d:
+                    direction = 2
+                elif key == pygame.K_UP or key == pygame.K_w:
+                    direction = 3
+
+                cmp = self.my_snake.direction
+                if self.input_buffer:
+                    cmp = self.input_buffer[-1]
+
+                if direction != -1 and direction % 2 != cmp % 2:
+                    self.input_buffer.append(direction)
 
         if event.type == pygame.KEYUP:
             key = event.key
@@ -148,53 +155,54 @@ class GameState(GUIState):
         self.receive()
 
     def receive(self):
-        info = self.connection.receive()
-        if not info:
-            return
-        if info[0] == "#":
-            args = info[1:].split(" ")
-            if args[0] == "apple":
-                uuid, pos = args[1], (int(args[2]), int(args[3]))
-                if pos in self.apples:
-                    self.apples.remove(pos)
+        while info := self.connection.receive():
+            if info[0] == "#":
+                args = info[1:].split(" ")
+                if args[0] == "apple":
+                    uuid, pos = args[1], (int(args[2]), int(args[3]))
+                    if pos in self.apples:
+                        self.apples.remove(pos)
+                    for snake in self.snakes:
+                        if snake.uuid == uuid:
+                            snake.length += 1
+
+                elif args[0] == "new_apple":
+                    pos = (int(args[1]), int(args[2]))
+                    if pos not in self.apples:
+                        self.apples.append(pos)
+
+                elif args[0] == "death":
+                    uuid = args[1]
+                    snek = self.find_snake(uuid)
+                    if snek:
+                        print("MURDERED SNAKE")
+                        self.snakes.remove(snek)
+                        if self.my_snake:
+                            if uuid == self.my_snake.uuid:
+                                self.my_snake = None
+
+                elif args[0] == "snake":
+                    uuid, name, direction, pos = args[1], args[2], int(args[3]), (int(args[4]), int(args[5]))
+                    snek = Snake(uuid, name, pos, direction)
+                    for i in range(6, len(args), 2):
+                        snek.body.append((int(args[i]), int(args[i + 1])))
+                    self.snakes.append(snek)
+                    if uuid == self.connection.uuid:
+                        self.my_snake = snek
+
+                elif args[0] == "turn":
+                    uuid, direction = args[1], int(args[2])
+                    print("Received Turn", direction)
+                    for snake in self.snakes:
+                        if snake.uuid == uuid:
+                            snake.direction = direction
+
+            if info == "tick":
+                if len(self.input_buffer):
+                    self.connection.send(f"#turn {self.input_buffer.pop(0)}")
+
                 for snake in self.snakes:
-                    if snake.uuid == uuid:
-                        snake.length += 1
-
-            elif args[0] == "new_apple":
-                pos = (int(args[1]), int(args[2]))
-                if pos not in self.apples:
-                    self.apples.append(pos)
-
-            elif args[0] == "death":
-                uuid = args[1]
-                snek = self.find_snake(uuid)
-                if snek:
-                    print("MURDERED SNAKE")
-                    self.snakes.remove(snek)
-                    if self.my_snake:
-                        if uuid == self.my_snake.uuid:
-                            self.my_snake = None
-
-            elif args[0] == "snake":
-                uuid, name, direction, pos = args[1], args[2], int(args[3]), (int(args[4]), int(args[5]))
-                snek = Snake(uuid, name, pos, direction)
-                for i in range(6, len(args), 2):
-                    snek.body.append((int(args[i]), int(args[i + 1])))
-                self.snakes.append(snek)
-                if uuid == self.connection.uuid:
-                    self.my_snake = snek
-
-            elif args[0] == "turn":
-                uuid, direction = args[1], int(args[2])
-                print("Received Turn", direction)
-                for snake in self.snakes:
-                    if snake.uuid == uuid:
-                        snake.direction = direction
-
-        if info == "tick":
-            for snake in self.snakes:
-                snake.tick()
+                    snake.tick()
 
     def draw(self, win):
         grid_x, grid_y = WIDTH // 100, HEIGHT // 100

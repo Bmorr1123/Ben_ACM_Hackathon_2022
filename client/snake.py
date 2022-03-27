@@ -7,6 +7,8 @@ class Snake:
         self.direction = direction
         self.length = 3
 
+        self.ticks = 0
+
     def get_head(self):
         return self.body[-1]
 
@@ -15,21 +17,18 @@ class Snake:
 
         x, y = 0, 0
         if self.direction == 0:
-            x += 1
-        # Left
-        elif self.direction == 1:
             x -= 1
-        # Up
-        elif self.direction == 2:
-            y -= 1
-        # Down
-        elif self.direction == 3:
+        elif self.direction == 1:
             y += 1
+        elif self.direction == 2:
+            x += 1
+        elif self.direction == 3:
+            y -= 1
 
-        # print(x, y)
+        print(f"Client: {self.ticks} {(head[0] + x, head[1] + y)}")
 
         self.body.append((head[0] + x, head[1] + y))
         if len(self.body) > self.length:
             self.body.pop(0)
 
-
+        self.ticks += 1

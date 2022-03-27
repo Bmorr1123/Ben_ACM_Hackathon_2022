@@ -13,7 +13,7 @@ import time
 
 
 class GameServer(threading.Thread):
-    time_step = 1 / 5
+    time_step = 1/10
 
     def __init__(self):
         super().__init__()
@@ -53,8 +53,7 @@ class GameServer(threading.Thread):
         for i, (connection, snake) in enumerate(self.connections):
 
             # Connection Handling
-            info: str = connection.receive()
-            if info:
+            while info := connection.receive():
                 if info[0] and snake:  # Does # only if client has a snake
                     args = info[1:].split(" ")
 
@@ -65,28 +64,31 @@ class GameServer(threading.Thread):
                 elif info == "join":
                     self.connections[i][1] = self.create_snake(connection)
 
-            # Game Handling
-            if do_tick and snake:
-                head = snake.tick()
-                collision_obj = self.get_pos(head)
+        do_tick = self.game_time > GameServer.time_step
+        if do_tick:
+            self.game_time -= GameServer.time_step
+            while len(self.apples) < len(self.connections) * 3:
+                self.create_apple(self.get_empty_pos())
+            for i, (connection, snake) in enumerate(self.connections):
+                # Game Handling
+                if snake:
+                    head = snake.tick()
+                    collision_obj = self.get_pos(head)
 
-                if collision_obj == "apple":
-                    self.send_all_client(f"#apple {snake.uuid} {head[0]} {head[1]}")
-                    self.apples.remove(head)
+                    if collision_obj == "apple":
+                        self.send_all_client(f"#apple {snake.uuid} {head[0]} {head[1]}")
+                        self.apples.remove(head)
 
-                elif collision_obj == "body":
-                    self.connections[i][1] = None
-                    self.send_all_client(f"#death {snake.uuid}")
-                    for pos in snake.body:
-                        if not randint(0, 3):
-                            self.create_apple(pos)
+                    elif collision_obj == "body":
+                        self.connections[i][1] = None
+                        self.send_all_client(f"#death {snake.uuid}")
+                        for pos in snake.body:
+                            if not randint(0, 3):
+                                self.create_apple(pos)
 
-                else:
                     snake.body.append(head)
                     while len(snake.body) > snake.length:
                         snake.body.pop(0)
-
-        if do_tick:
             self.send_all_client("tick")
 
     def create_snake(self, connection):
