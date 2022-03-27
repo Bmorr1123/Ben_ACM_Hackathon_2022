@@ -36,33 +36,53 @@ class GameServer(threading.Thread):
             self.game_time -= GameServer.time_step
 
         for i, (connection, snake) in enumerate(self.connections):
+
             # Connection Handling
             info: str = connection.receive()
-
-            if info.startswith("#"):
+            if info.startswith("#") and snake:  # Does # only if client has a snake
                 args = info[1:].split(" ")
-                if args[0] == "join":
 
-                    while self.get_pos(pos := (randint(0, 99), randint(0, 99))):
-                        pass
-                    self.connections[i][1] = Snake(connection.uuid, pos, randint(0, 3))
-                if args[0] == "snake" and snake:  # Does this only if they have an alive Snake
-                    if args[1] == "turn":
-                        snake.direction = int(args[2])
+                if args[1] == "turn":
+                    snake.direction = int(args[2])
+                    self.send_all_client(f"#turn {snake.uuid} {snake.direction}")
+
+            elif info == "join":
+                self.connections[i][1] = self.create_snake(connection)
 
             # Game Handling
             if do_tick:
                 snake.tick()
                 head = snake.get_head()
                 collision_obj = self.get_pos(head)
+
                 if collision_obj == "apple":
-                    self.send_all_client(f"#apple {snake.uuid}")
+                    self.send_all_client(f"#apple {snake.uuid} {head[0]} {head[1]}")
+                    self.apples.remove(head)
+
                 elif collision_obj == "body":
-                    self.send_all_client(f"#die {snake.uuid}")
+                    self.send_all_client(f"#death {snake.uuid}")
+                    for pos in snake.body:
+                        if not randint(0, 3):
+                            self.create_apple(pos)
+
+    def create_snake(self, connection):
+        pos = self.get_empty_pos()
+        direction = randint(0, 3)
+        self.send_all_client(f"#snake {connection.uuid} {connection.name} {pos[0]} {pos[1]} {direction}")
+        return Snake(connection.uuid, pos, direction)
+
+    def create_apple(self, pos):
+        self.send_all_client(f"#new_apple {pos[0]} {pos[1]}")
+        self.apples.append(pos)
 
     def send_all_client(self, message):
         for connection, snake in self.connections:
             connection.send(message)
+
+    def get_empty_pos(self):
+        while self.get_pos(pos := (randint(0, 99), randint(0, 99))):
+            pass
+        return pos
 
     def get_pos(self, pos: tuple):
         if pos in self.apples:
