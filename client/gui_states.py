@@ -143,7 +143,8 @@ class GameState(GUIState):
                     self.connection.send("join")
 
     def tick(self, delta):
-        self.f3_text.set_text(f"fps: {1 / delta:.2f}")
+        if delta:
+            self.f3_text.set_text(f"fps: {1 / delta:.2f}")
         self.receive()
 
     def receive(self):
