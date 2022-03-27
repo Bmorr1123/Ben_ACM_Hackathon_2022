@@ -1,20 +1,24 @@
 import socket
-
+from connection import Connection
+import threading
 
 def main():
     port = 3369
     running = True
+    connections = []
+
 
     server = socket.socket()
     server.bind(("localhost", port))
     server.listen(4)
+    clients = []
 
     while running:
         client, address = server.accept()
-        print("New connection from:", address)
-        data = client.recv(1024)
-        print(f"Client: {data.decode()}")
-        client.send(f"Welcome to the server {data.decode()}!".encode())
+        con = Connection(client)
+        con.getName()
+        print("New user called", con.getNames()[0])
+
 
     print("Listening on port", port)
 
