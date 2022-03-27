@@ -13,6 +13,7 @@ class Connection:
         self.string = ""
 
         data: str = self.client.recv(1024).decode()
+        print(f"RECV {data}")
         self.setName(data.strip())
 
         rec = self.receive()
@@ -39,6 +40,7 @@ class Connection:
         return self.name, self.uuid
 
     def send(self, message):
+        print(f"Server -> Client: {message}")
         self.client.send(f"{message}\n".encode())
 
     def receive(self):
@@ -47,7 +49,10 @@ class Connection:
             return data
 
         try:
-            data = self.client.recv(1024).decode()
+            data = ""
+            while "\n" not in data:
+                data += self.client.recv(2048).decode()
+
             if "\n" in data:
                 data = data.split("\n", 1)
                 self.string += data[1]

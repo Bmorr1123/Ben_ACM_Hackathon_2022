@@ -181,11 +181,11 @@ class GameState(GUIState):
                                 self.my_snake = None
 
                 elif args[0] == "snake":
+                    print("CREATING SNAKE")
                     self.add_snake(args)
 
                 elif args[0] == "turn":
                     uuid, direction = args[1], int(args[2])
-                    print("Received Turn", direction)
                     for snake in self.snakes:
                         if snake.uuid == uuid:
                             snake.direction = direction
@@ -217,6 +217,7 @@ class GameState(GUIState):
         return None
 
     def add_snake(self, args):
+        print(f"Snake Args: {args}")
         uuid, name, direction, length, count = args[1], args[2], int(args[3]), int(args[4]), int(args[5])
         args = args[6:]
 
@@ -236,6 +237,7 @@ class GameState(GUIState):
             self.my_snake = snek
 
         self.snakes.append(snek)
+        print(f"Created snake \"{snek.name}\" with uuid {snek.uuid}")
 
     def on_quit(self):
         ...

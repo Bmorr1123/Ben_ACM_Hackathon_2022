@@ -15,6 +15,7 @@ class Connection:
         self.port = port
 
         self.connection.connect((self.ip, self.port))
+        print(f"SENT {name} to server")
         self.send(name)
 
         self.name = name
@@ -36,12 +37,16 @@ class Connection:
             data, self.string = self.string.split("\n", 1)
             return data
         try:
-            data = self.connection.recv(1024).decode()
+            data = ""
+            while "\n" not in data:
+                data += self.connection.recv(2048).decode()
+
+            print(f"Server -> Client: {data}")
+
             if "\n" in data:
                 data = data.split("\n", 1)
                 self.string += data[1]
                 return data[0].replace("\n", "")
-
             return data
         except socket.timeout:
             return ""
