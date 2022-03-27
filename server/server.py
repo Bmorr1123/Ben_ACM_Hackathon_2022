@@ -107,7 +107,7 @@ class GameServer(threading.Thread):
         string += " ".join([f"{c[0]} {c[1]} {c[2]}" for c in connection.colors])
         string += " " + " ".join([f"{pos[0]} {pos[1]}" for pos in snake.body])
 
-        print(f"Sending {string}")
+        # print(f"Sending {string}")
 
         self.send_all_client(string)
         return snake
@@ -117,7 +117,7 @@ class GameServer(threading.Thread):
         self.apples.append(pos)
 
     def send_all_client(self, message):
-        print(f"->ALL: {message}")
+        # print(f"->ALL: {message}")
         for connection, snake in self.connections:
             connection.send(message)
 

@@ -15,7 +15,7 @@ class Connection:
         self.port = port
 
         self.connection.connect((self.ip, self.port))
-        print(f"SENT {name} to server")
+        # print(f"SENT {name} to server")
         self.send(name)
 
         self.name = name

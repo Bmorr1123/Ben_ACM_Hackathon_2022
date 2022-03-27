@@ -5,6 +5,7 @@ from abc import *
 from connection import Connection
 from snake import Snake
 from server.server import ConnectionServer
+from pygame._sdl2 import controller as con
 
 
 WIDTH, HEIGHT = size()
@@ -117,6 +118,8 @@ class GameState(GUIState):
 
         self.connection = Connection(ip, 3369, name)
 
+        inputs = [con.Controller(index) for index in range(con.get_count())]
+
         self.f3_text = gui.elements.UILabel(
             pygame.Rect(0, 0, -1, -1),
             "???", self.manager, visible=False
@@ -167,7 +170,32 @@ class GameState(GUIState):
                 if direction != -1 and direction % 2 != cmp % 2:
                     self.input_buffer.append(direction)
 
-        if event.type == pygame.KEYUP:
+        elif event.type == pygame.CONTROLLERBUTTONDOWN:
+            print(event)
+            button = event.button
+            if self.my_snake:
+                direction = -1
+                if button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
+                    direction = 0
+                elif button == pygame.CONTROLLER_BUTTON_DPAD_DOWN:
+                    direction = 1
+                elif button == pygame.CONTROLLER_BUTTON_DPAD_RIGHT:
+                    direction = 2
+                elif button == pygame.CONTROLLER_BUTTON_DPAD_UP:
+                    direction = 3
+
+                cmp = self.my_snake.direction
+                if self.input_buffer:
+                    cmp = self.input_buffer[-1]
+
+                if direction != -1 and direction % 2 != cmp % 2:
+                    self.input_buffer.append(direction)
+
+            if button == pygame.CONTROLLER_BUTTON_A:
+                if not self.my_snake:
+                    self.connection.send("join")
+
+        elif event.type == pygame.KEYUP:
             key = event.key
             if key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(

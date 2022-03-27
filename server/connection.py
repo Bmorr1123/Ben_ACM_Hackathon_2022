@@ -36,7 +36,7 @@ class Connection:
         return self.name, self.uuid
 
     def send(self, message):
-        print(f"Server -> Client: {message}")
+        # print(f"Server -> Client: {message}")
         try:
             self.client.send(f"{message}\n".encode())
         except (ConnectionAbortedError, ConnectionResetError):
