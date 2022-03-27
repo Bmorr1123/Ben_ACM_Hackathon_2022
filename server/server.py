@@ -135,8 +135,13 @@ class ConnectionServer(threading.Thread):
         game_server.start()
 
         server = socket.socket()
-        server.bind(("25.88.17.131", port))
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        server.bind((ip, port))
         server.listen(69420)
+
+        print("Listening on port", port)
+        print("Listening on ip", ip)
 
         while running:
             client, address = server.accept()
@@ -145,7 +150,7 @@ class ConnectionServer(threading.Thread):
             game_server.add_connection(con)
 
 
-        print("Listening on port", port)
+
 
 
 def main():
