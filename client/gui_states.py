@@ -95,7 +95,9 @@ class MenuState(GUIState):
                     GUISTATE_SWITCH, state_type=JoinState
                 ))
             elif button == self.settings_button:
-                pass  # TODO: For Ben O to do
+                pygame.event.post(pygame.event.Event(
+                    GUISTATE_SWITCH, state_type=ColorState
+                ))
             elif button == self.exit_button:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
 
@@ -292,6 +294,73 @@ class JoinState(GUIState):
                 pygame.event.post(pygame.event.Event(
                     GUISTATE_SWITCH, state_type=MenuState
                 ))
+
+    def tick(self, delta):
+        ...
+
+    def draw(self, win):
+        ...
+
+    def on_quit(self):
+        ...
+
+class ColorState(GUIState):
+    def __init__(self):
+        super().__init__()
+
+        self.title = gui.elements.UILabel(
+            pygame.Rect(WIDTH * 0.1, HEIGHT * 0.1, WIDTH * 0.8, HEIGHT * 0.3),
+            "Color", self.manager, object_id=gui.core.ObjectID("title", "none")
+        )
+
+        self.title.set_active_effect(gui.TEXT_EFFECT_TYPING_APPEAR, params={"time_per_letter": 1})
+
+        self.color1 = gui.elements.UITextEntryLine(
+            pygame.Rect(WIDTH * .1, HEIGHT * .4, WIDTH * .2, HEIGHT * .05),
+            self.manager, object_id=gui.core.ObjectID("ip_entry", class_id="#medium_font_style")
+        )
+
+        self.title = gui.elements.UILabel(
+            pygame.Rect(WIDTH * .4, HEIGHT * .35, WIDTH * .2, HEIGHT * .05),
+            "(Optional)", self.manager, object_id=gui.core.ObjectID("host", "#small_font_style")
+        )
+
+        self.color2 = gui.elements.UITextEntryLine(
+            pygame.Rect(WIDTH * .4, HEIGHT * .4, WIDTH * .2, HEIGHT * .05),
+            self.manager, object_id=gui.core.ObjectID("ip_entry", class_id="#medium_font_style")
+        )
+
+        self.title = gui.elements.UILabel(
+            pygame.Rect(WIDTH * .7, HEIGHT * .35, WIDTH * .2, HEIGHT * .05),
+            "(Optional)", self.manager, object_id=gui.core.ObjectID("host", "#small_font_style")
+        )
+
+        self.color3 = gui.elements.UITextEntryLine(
+            pygame.Rect(WIDTH * .7, HEIGHT * .4, WIDTH * .2, HEIGHT * .05),
+            self.manager, object_id=gui.core.ObjectID("ip_entry", class_id="#medium_font_style")
+        )
+
+        self.back_button = gui.elements.UIButton(
+            pygame.Rect(WIDTH * .25, HEIGHT * .65, WIDTH * .5, HEIGHT * .2),
+            "Back", self.manager, object_id=gui.core.ObjectID("join", "#large_font_style")
+        )
+
+    def handle_event(self, event, mods):
+        if event.type == gui.UI_BUTTON_PRESSED:
+            button = event.ui_element
+            if button == self.color1:
+               self.color1picker.show()
+            elif button == self.color2:
+                pass
+            elif button == self.color3:
+                pass
+            elif button == self.back_button:
+                pygame.event.post(pygame.event.Event(
+                    GUISTATE_SWITCH, state_type=MenuState
+                ))
+
+        if event.type == gui.UI_COLOUR_PICKER_COLOUR_PICKED:
+            self.color1.colours["normal_bg"] = event.colour
 
     def tick(self, delta):
         ...
