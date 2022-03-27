@@ -6,6 +6,7 @@ class Connection:
         self.client = client
         self.name = ""
         self.uuid = ""
+        self.client.setdefaulttimeout(0)
 
     def setName(self, name):
         self.name = name

@@ -5,9 +5,9 @@ from snake import Snake
 from random import randint
 import time
 
-class GameServer(threading.Thread):
 
-    time_step = 1/5
+class GameServer(threading.Thread):
+    time_step = 1 / 5
 
     def __init__(self):
         super().__init__()
@@ -97,6 +97,7 @@ class GameServer(threading.Thread):
 
         return None
 
+
 def main():
     port = 3369
     running = True
@@ -113,6 +114,7 @@ def main():
         con.getName()
         print("New user called", con.getNames()[0])
         game_server.connections.append(con)
+        con.send(" ".join([str(randint(100, 255)) for i in range(3)]))
 
     print("Listening on port", port)
 
