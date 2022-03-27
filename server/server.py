@@ -42,7 +42,10 @@ class GameServer(threading.Thread):
             if info.startswith("#"):
                 args = info[1:].split(" ")
                 if args[0] == "join":
-                    self.connections[i][1] = Snake(randint(0, 3), )
+
+                    while self.get_pos(pos := (randint(0, 99), randint(0, 99))):
+                        pass
+                    self.connections[i][1] = Snake(connection.uuid, pos, randint(0, 3))
                 if args[0] == "snake" and snake:  # Does this only if they have an alive Snake
                     if args[1] == "turn":
                         snake.direction = int(args[2])
@@ -50,6 +53,16 @@ class GameServer(threading.Thread):
             # Game Handling
             if do_tick:
                 snake.tick()
+                head = snake.get_head()
+                collision_obj = self.get_pos(head)
+                if collision_obj == "apple":
+                    self.send_all_client(f"#apple {snake.uuid}")
+                elif collision_obj == "body":
+                    self.send_all_client(f"#die {snake.uuid}")
+
+    def send_all_client(self, message):
+        for connection, snake in self.connections:
+            connection.send(message)
 
     def get_pos(self, pos: tuple):
         if pos in self.apples:
@@ -59,7 +72,10 @@ class GameServer(threading.Thread):
             if pos in snake.body:
                 return "body"
 
-        return "empty"
+        if not (0 <= pos[0] < 100 and 0 <= pos[1] < 100):
+            return "body"
+
+        return None
 
 def main():
     port = 3369

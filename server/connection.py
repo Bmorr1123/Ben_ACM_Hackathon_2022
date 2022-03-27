@@ -30,4 +30,5 @@ class Connection:
         self.client.send(message.encode())
 
     def receive(self):
+        # TODO: Check if we need to .split("\n")
         return self.client.recv(1024).decode()

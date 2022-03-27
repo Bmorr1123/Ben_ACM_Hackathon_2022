@@ -5,8 +5,11 @@ class Snake:
         self.direction = direction
         self.length = 3
 
+    def get_head(self):
+        return self.body[-1]
+
     def tick(self):
-        head = self.body[-1]
+        head = self.get_head()
 
         x, y = 0, 0
         if self.direction == 0:
