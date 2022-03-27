@@ -2,6 +2,9 @@ import pygame
 from pygame.display import get_window_size as size
 import pygame_gui as gui
 from abc import *
+from connection import Connection
+from snake import Snake
+from server.server import ConnectionServer
 
 
 WIDTH, HEIGHT = size()
@@ -70,8 +73,12 @@ class MenuState(GUIState):
         if event.type == gui.UI_BUTTON_PRESSED:
             button = event.ui_element
             if button == self.host_button:
+
+                host = ConnectionServer()
+                host.start()
+
                 pygame.event.post(pygame.event.Event(
-                    GUISTATE_SWITCH, state_type=GameState, ip="localhost"
+                    GUISTATE_SWITCH, state_type=GameState, ip="localhost", username="Host"
                 ))
             elif button == self.join_button:
                 pygame.event.post(pygame.event.Event(
@@ -89,8 +96,11 @@ class MenuState(GUIState):
 
 
 class GameState(GUIState):
-    def __init__(self, ip):
+    def __init__(self, ip, name):
         super().__init__()
+
+        self.connection = Connection(ip, 3369, name)
+        self.connection.connect()
 
         self.f3_text = gui.elements.UILabel(
             pygame.Rect(0, 0, -1, -1),
@@ -100,6 +110,8 @@ class GameState(GUIState):
             pygame.Rect(0, HEIGHT - 20, -1, -1),
             ip, self.manager
         )
+
+        self.snakes = [Snake(self.connection.uuid, (50, 50), 1)]
 
     def handle_event(self, event, mods):
         if event.type == pygame.KEYUP:
@@ -117,6 +129,10 @@ class GameState(GUIState):
         for i in range(1, 100):
             pygame.draw.line(win, (0, 0, 0), (i * grid_x, 0), (i * grid_x, HEIGHT))
             pygame.draw.line(win, (0, 0, 0), (0, i * grid_y), (HEIGHT, i * grid_y))
+
+        for snake in self.snakes:
+            for i, pos in enumerate(snake.body):
+                pygame.draw.rect(win, (0, 0, 255), (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
 
     def on_quit(self):
         ...
@@ -148,7 +164,7 @@ class JoinState(GUIState):
                 ip = self.ip_field.get_text()
                 if ip:
                     switch = pygame.event.Event(
-                        GUISTATE_SWITCH, state_type=GameState, ip=ip
+                        GUISTATE_SWITCH, state_type=GameState, ip=ip, username="Help"
                     )
                     pygame.event.post(switch)
         elif event.type == pygame.KEYUP:

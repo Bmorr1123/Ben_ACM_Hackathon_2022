@@ -98,25 +98,35 @@ class GameServer(threading.Thread):
         return None
 
 
+class ConnectionServer(threading.Thread):
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        port = 3369
+        running = True
+
+        game_server = GameServer()
+        game_server.start()
+
+        server = socket.socket()
+        server.bind(("localhost", port))
+        server.listen(69420)
+
+        while running:
+            client, address = server.accept()
+            con = Connection(client)
+            con.getName()
+            print("New user called", con.getNames()[0])
+            game_server.connections.append(con)
+            con.send(" ".join([str(randint(100, 255)) for i in range(3)]))
+
+        print("Listening on port", port)
+
+
 def main():
-    port = 3369
-    running = True
-
-    game_server = GameServer()
-
-    server = socket.socket()
-    server.bind(("localhost", port))
-    server.listen(4)
-
-    while running:
-        client, address = server.accept()
-        con = Connection(client)
-        con.getName()
-        print("New user called", con.getNames()[0])
-        game_server.connections.append(con)
-        con.send(" ".join([str(randint(100, 255)) for i in range(3)]))
-
-    print("Listening on port", port)
+    server = ConnectionServer()
+    server.run()
 
 
 if __name__ == '__main__':

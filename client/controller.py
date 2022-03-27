@@ -33,6 +33,7 @@ def main():
                 params = []
                 if STATE_TYPE == gui_states.GameState:
                     params.append(event.ip)
+                    params.append(event.username)
 
                 found_state = False
                 # Looking for state of this type
