@@ -21,7 +21,6 @@ class Connection(threading.Thread):
             self.uuid = uuid
             Connection.uuids.append(self.uuid)
 
-
     def getNames(self):
         return self.name, self.uuid
 
@@ -30,7 +29,8 @@ class Connection(threading.Thread):
         self.setName(data.strip())
         return self.name
 
-
     def send(self, message):
         self.client.send(message.encode())
 
+    def recieve(self):
+        self.client.recv(1024).decode()

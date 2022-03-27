@@ -2,11 +2,11 @@ import socket
 from connection import Connection
 import threading
 
+
 def main():
     port = 3369
     running = True
     connections = []
-
 
     server = socket.socket()
     server.bind(("localhost", port))
@@ -18,7 +18,6 @@ def main():
         con = Connection(client)
         con.getName()
         print("New user called", con.getNames()[0])
-
 
     print("Listening on port", port)
 
