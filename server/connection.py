@@ -1,7 +1,4 @@
-import threading
-
-
-class Connection(threading.Thread):
+class Connection:
     uuids = []
 
     def __init__(self, client):
