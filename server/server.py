@@ -1,7 +1,12 @@
 import socket
-import server.connection as sc
+try:
+    import server.connection as sc
+    import server.snake as ss
+except ModuleNotFoundError:
+    import connection as sc
+    import snake as ss
 import threading
-import server.snake as ss
+
 from random import randint
 import time
 
