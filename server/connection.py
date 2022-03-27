@@ -32,5 +32,5 @@ class Connection(threading.Thread):
     def send(self, message):
         self.client.send(message.encode())
 
-    def recieve(self):
+    def receive(self):
         return self.client.recv(1024).decode()
