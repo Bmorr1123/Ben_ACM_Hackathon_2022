@@ -1,5 +1,4 @@
 import socket
-from random import randint
 
 
 class Connection:
