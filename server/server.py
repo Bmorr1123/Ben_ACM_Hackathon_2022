@@ -99,7 +99,7 @@ class GameServer(threading.Thread):
             self.send_all_client("tick")
 
     def create_snake(self, connection):
-        pos = self.get_empty_pos()
+        pos = self.get_spread_pos()
         direction = randint(0, 3)
         snake = ss.Snake(connection.uuid, pos, direction)
 
@@ -120,6 +120,15 @@ class GameServer(threading.Thread):
         print(f"->ALL: {message}")
         for connection, snake in self.connections:
             connection.send(message)
+
+    def get_spread_pos(self):
+        pos = self.get_empty_pos()
+        dist = 100
+        while dist < 25:
+            pos = self.get_empty_pos()
+            dist = min([((snake.get_head()[0] - pos[0]) ** 2 + (snake.get_head()[1] - pos[1]) ** 2) ** (1 / 2) for
+                        connection, snake in self.connections])
+        return pos
 
     def get_empty_pos(self):
         while self.get_pos(pos := (randint(0, 99), randint(0, 99))):

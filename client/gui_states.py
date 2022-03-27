@@ -119,12 +119,25 @@ class GameState(GUIState):
 
         self.f3_text = gui.elements.UILabel(
             pygame.Rect(0, 0, -1, -1),
-            "???", self.manager
+            "???", self.manager, visible=False
         )
-        self.ip_text = gui.elements.UILabel(
-            pygame.Rect(0, HEIGHT - 20, -1, -1),
-            ip, self.manager
-        )
+        # self.ip_text = gui.elements.UILabel(
+        #     pygame.Rect(0, HEIGHT - 20, -1, -1),
+        #     ip, self.manager
+        # )
+
+        # self.leaderboard = gui.elements.UIPanel(
+        #     pygame.Rect(WIDTH * .7, 0, WIDTH * .3, HEIGHT * .2), 1, manager=self.manager,
+        #     object_id=gui.core.ObjectID("leaderboard", "leaderboard")
+        # )
+        #
+        # self.lb_title = gui.elements.UILabel(
+        #     pygame.Rect(0, 0, WIDTH *.3, -1), "Leaderboard:", self.manager, container=self.leaderboard,
+        #     object_id=gui.core.ObjectID(name, "#small_font_style")
+        # )
+
+        self.names = {}
+        self.labels = {}
 
         self.my_snake = None
         self.snakes = []
@@ -165,12 +178,16 @@ class GameState(GUIState):
                 if not self.my_snake:
                     self.connection.send("join")
 
+            if key == pygame.K_F3:
+                self.f3_text.visible = not self.f3_text.visible
+
     def tick(self, delta):
         if delta:
             self.f3_text.set_text(f"fps: {1 / delta:.2f}")
         self.receive()
 
     def receive(self):
+        grid_x, grid_y = WIDTH // 100, HEIGHT // 100
         while info := self.connection.receive():
             if info[0] == "#":
                 args = info[1:].split(" ")
@@ -235,6 +252,7 @@ class GameState(GUIState):
     def add_snake(self, args):
         print(f"Snake Args: {args}")
         uuid, name, direction, length, count = args[1], args[2], int(args[3]), int(args[4]), int(args[5])
+
         args = args[6:]
 
         colors = []

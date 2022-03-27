@@ -37,7 +37,10 @@ class Connection:
 
     def send(self, message):
         print(f"Server -> Client: {message}")
-        self.client.send(f"{message}\n".encode())
+        try:
+            self.client.send(f"{message}\n".encode())
+        except (ConnectionAbortedError, ConnectionResetError):
+            self.alive = False
 
     def receive(self):
         if self.string:  # If there is already data queued, return that.

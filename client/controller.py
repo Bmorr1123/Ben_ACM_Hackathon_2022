@@ -17,6 +17,7 @@ pygame.display.set_caption(game_name)
 
 import gui_states
 
+
 def main():
     looping = True
     states = [gui_states.MenuState()]
