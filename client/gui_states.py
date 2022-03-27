@@ -53,20 +53,30 @@ class MenuState(GUIState):
         super().__init__()
 
         self.title = gui.elements.UILabel(
-            pygame.Rect(WIDTH * 0.1, HEIGHT * 0.1, WIDTH * 0.8, HEIGHT * 0.3),
+            pygame.Rect(WIDTH * 0.1, HEIGHT * 0.1, WIDTH * 0.8, HEIGHT * 0.2),
             "SNEK", self.manager, object_id=gui.core.ObjectID("title", "none")
         )
 
         self.title.set_active_effect(gui.TEXT_EFFECT_TYPING_APPEAR, params={"time_per_letter": 1})
 
         self.host_button = gui.elements.UIButton(
-            pygame.Rect(WIDTH * .25, HEIGHT * .4, WIDTH * .5, HEIGHT * .2),
+            pygame.Rect(WIDTH * .25, HEIGHT * .5, WIDTH * .5, HEIGHT * .1),
             "Host", self.manager, object_id=gui.core.ObjectID("host", "#large_font_style")
         )
 
         self.join_button = gui.elements.UIButton(
-            pygame.Rect(WIDTH * .25, HEIGHT * .65, WIDTH * .5, HEIGHT * .2),
+            pygame.Rect(WIDTH * .25, HEIGHT * .6, WIDTH * .5, HEIGHT * .1),
             "Join", self.manager, object_id=gui.core.ObjectID("join", "#large_font_style")
+        )
+
+        self.settings_button = gui.elements.UIButton(
+            pygame.Rect(WIDTH * .25, HEIGHT * .7, WIDTH * .5, HEIGHT * .1),
+            "Settings", self.manager, object_id=gui.core.ObjectID("settings", "#large_font_style")
+        )
+
+        self.exit_button = gui.elements.UIButton(
+            pygame.Rect(WIDTH * .25, HEIGHT * .8, WIDTH * .5, HEIGHT * .1),
+            "Exit", self.manager, object_id=gui.core.ObjectID("exit", "#large_font_style")
         )
 
     def handle_event(self, event, mods):
@@ -84,6 +94,10 @@ class MenuState(GUIState):
                 pygame.event.post(pygame.event.Event(
                     GUISTATE_SWITCH, state_type=JoinState
                 ))
+            elif button == self.settings_button:
+                pass  # TODO: For Ben O to do
+            elif button == self.exit_button:
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
 
     def tick(self, delta):
         ...

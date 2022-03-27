@@ -13,15 +13,11 @@ class Connection:
         self.string = ""
 
         data: str = self.client.recv(1024).decode()
-        print(f"RECV {data}")
         self.setName(data.strip())
 
         rec = self.receive()
-        print(rec)
         colors = [int(i) for i in rec.split(" ")]
-        print(colors)
         self.colors = [colors[i:i + 3] for i in range(0, int(len(colors)), 3)]
-        print(self.colors)
 
         self.client.settimeout(0.005)
         self.alive = True
@@ -49,9 +45,7 @@ class Connection:
             return data
 
         try:
-            data = ""
-            while "\n" not in data:
-                data += self.client.recv(2048).decode()
+            data = self.client.recv(2048).decode()
 
             if "\n" in data:
                 data = data.split("\n", 1)

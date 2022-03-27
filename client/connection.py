@@ -37,12 +37,7 @@ class Connection:
             data, self.string = self.string.split("\n", 1)
             return data
         try:
-            data = ""
-            while "\n" not in data:
-                data += self.connection.recv(2048).decode()
-
-            print(f"Server -> Client: {data}")
-
+            data = self.connection.recv(2048).decode()
             if "\n" in data:
                 data = data.split("\n", 1)
                 self.string += data[1]

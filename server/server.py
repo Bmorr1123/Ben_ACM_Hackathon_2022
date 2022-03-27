@@ -28,10 +28,10 @@ class GameServer(threading.Thread):
         self.connections.append([connection, None])
         for pos in self.apples:
             connection.send(f"#new_apple {pos[0]} {pos[1]}")
-        for connection, snake in self.connections:
+        for connection2, snake in self.connections:
             if snake:
-                string = f"#snake {connection.uuid} {connection.name} {snake.direction} {snake.length} {len(connection.colors)} "
-                string += " ".join([f"{c[0]} {c[1]} {c[2]}" for c in connection.colors])
+                string = f"#snake {connection2.uuid} {connection2.name} {snake.direction} {snake.length} {len(connection2.colors)} "
+                string += " ".join([f"{c[0]} {c[1]} {c[2]}" for c in connection2.colors])
                 string += " " + " ".join([f"{pos[0]} {pos[1]}" for pos in snake.body])
                 connection.send(string)
 
@@ -81,6 +81,7 @@ class GameServer(threading.Thread):
                     collision_obj = self.get_pos(head)
 
                     if collision_obj == "apple":
+                        snake.length += 1
                         self.send_all_client(f"#apple {snake.uuid} {head[0]} {head[1]}")
                         self.apples.remove(head)
 
@@ -108,7 +109,7 @@ class GameServer(threading.Thread):
 
         print(f"Sending {string}")
 
-        connection.send(string)
+        self.send_all_client(string)
         return snake
 
     def create_apple(self, pos):
@@ -116,7 +117,7 @@ class GameServer(threading.Thread):
         self.apples.append(pos)
 
     def send_all_client(self, message):
-        # print(f"->ALL: {message}")
+        print(f"->ALL: {message}")
         for connection, snake in self.connections:
             connection.send(message)
 
