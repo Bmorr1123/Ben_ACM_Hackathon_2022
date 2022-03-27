@@ -3,6 +3,7 @@ import socket
 
 
 class Connection:
+    LOCALHOST = socket.gethostbyname(socket.gethostname())
 
     def __init__(self, ip, port, name):
         super().__init__()

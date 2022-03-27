@@ -20,7 +20,7 @@ class Connection:
 
         self.send(" ".join([str(i) for i in color]))
 
-        self.client.settimeout(0.01)
+        self.client.settimeout(0.005)
 
     def setName(self, name):
         self.name = name

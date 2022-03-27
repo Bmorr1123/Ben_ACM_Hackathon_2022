@@ -78,7 +78,7 @@ class MenuState(GUIState):
                 host.start()
 
                 pygame.event.post(pygame.event.Event(
-                    GUISTATE_SWITCH, state_type=GameState, ip="25.88.17.131", username="Host"
+                    GUISTATE_SWITCH, state_type=GameState, ip=Connection.LOCALHOST, username="Host"
                 ))
             elif button == self.join_button:
                 pygame.event.post(pygame.event.Event(

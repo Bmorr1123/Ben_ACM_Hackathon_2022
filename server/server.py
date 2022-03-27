@@ -44,11 +44,6 @@ class GameServer(threading.Thread):
 
     def tick(self, delta):
         self.game_time += delta
-        do_tick = self.game_time > GameServer.time_step
-        if do_tick:
-            self.game_time -= GameServer.time_step
-            while len(self.apples) < len(self.connections):
-                self.create_apple(self.get_empty_pos())
 
         for i, (connection, snake) in enumerate(self.connections):
 
@@ -69,6 +64,7 @@ class GameServer(threading.Thread):
             self.game_time -= GameServer.time_step
             while len(self.apples) < len(self.connections) * 3:
                 self.create_apple(self.get_empty_pos())
+
             for i, (connection, snake) in enumerate(self.connections):
                 # Game Handling
                 if snake:
@@ -89,6 +85,7 @@ class GameServer(threading.Thread):
                     snake.body.append(head)
                     while len(snake.body) > snake.length:
                         snake.body.pop(0)
+
             self.send_all_client("tick")
 
     def create_snake(self, connection):
@@ -102,7 +99,7 @@ class GameServer(threading.Thread):
         self.apples.append(pos)
 
     def send_all_client(self, message):
-        # print(message)
+        print(message)
         for connection, snake in self.connections:
             connection.send(message)
 
