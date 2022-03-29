@@ -1,4 +1,4 @@
-# Ben_ACM_Hackathon_2022
+# Ben ACM Hackathon 2022
 
 Ben Morrison and Ben O'Bryan
 
