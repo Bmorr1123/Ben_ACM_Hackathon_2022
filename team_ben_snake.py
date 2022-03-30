@@ -51,10 +51,12 @@ def main():
                         current_state = i
                         found_state = True
 
-                if not found_state:
-                    states.append(event.state_type(*params))
-                    current_state = len(states) - 1
-                    print(states, current_state)
+                if found_state:
+                    states.pop(current_state).on_quit()
+
+                states.append(event.state_type(*params))
+                current_state = len(states) - 1
+                print(states, current_state)
 
         # Manages the current state
         states[current_state].handle_events(events, mods)

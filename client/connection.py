@@ -1,6 +1,6 @@
 import json
 import threading
-import socket
+import socket, os
 
 
 class Connection:
@@ -13,8 +13,11 @@ class Connection:
 
         self.ip = ip
         self.port = port
-
-        self.connection.connect((self.ip, self.port))
+        try:
+            self.connection.connect((self.ip, self.port))
+        except (ConnectionRefusedError, socket.gaierror):
+            self.name = None
+            return
         # print(f"SENT {name} to server")
         self.send(name)
 
@@ -23,9 +26,13 @@ class Connection:
 
         self.uuid = self.receive()
 
-        with open("client/res/colors.json") as file:
-            data = json.load(file)
-            self.send(" ".join([f"{i[0]} {i[1]} {i[2]}" for i in data]))
+        print("Getting colors")
+        try:
+            with open("client/res/colors.json") as file:
+                data = json.load(file)
+                self.send(" ".join([f"{i[0]} {i[1]} {i[2]}" for i in data]))
+        except FileNotFoundError:
+            self.send("200 200 200")
 
         self.connection.settimeout(0.01)
 

@@ -158,10 +158,10 @@ class MultiServer(threading.Thread):
         self.game_server = game_server
 
     def run(self):
-        server = socket.socket()
+        server = socket.create_server((self.ip, self.port), family=socket.AF_INET6, dualstack_ipv6=True)
         ip, port = self.ip, self.port
 
-        server.bind((ip, port))
+        # server.bind((ip, port))
         server.listen(69420)
 
         print(f"Listening on {ip}:{port}")
@@ -184,14 +184,12 @@ class ConnectionServer(threading.Thread):
         game_server = GameServer()
         game_server.start()
 
-        hostnames = [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
-        for hostname in hostnames:
-            try:
-                ip = socket.gethostbyname(hostname)
-                ms = MultiServer(ip, port, game_server)
-                ms.start()
-            except socket.gaierror:
-                pass
+        hostname = ''
+        try:
+            ms = MultiServer(hostname, port, game_server)
+            ms.start()
+        except socket.gaierror:
+            pass
 
 
 def main():

@@ -1,10 +1,12 @@
 import pygame
 from pygame.display import get_window_size as size
 import pygame_gui as gui
+from pygame import Vector2
 from abc import *
 from client.snake import Snake
 from pygame._sdl2 import controller as con
 import client.connection
+from random import randint, random
 
 
 WIDTH, HEIGHT = size()
@@ -124,6 +126,7 @@ class GameState(GUIState):
             pygame.Rect(0, 0, -1, -1),
             "???", self.manager, visible=False
         )
+
         # self.ip_text = gui.elements.UILabel(
         #     pygame.Rect(0, HEIGHT - 20, -1, -1),
         #     ip, self.manager
@@ -147,6 +150,7 @@ class GameState(GUIState):
         self.apples = []
 
         self.input_buffer = []
+        self.particles = []
 
     def handle_event(self, event, mods):
 
@@ -212,6 +216,17 @@ class GameState(GUIState):
     def tick(self, delta):
         if delta:
             self.f3_text.set_text(f"fps: {1 / delta:.2f}")
+
+        i = 0
+        while i < len(self.particles):
+            particle = self.particles[i]
+            particle[0] += particle[1] * delta
+            particle[-2] = particle[-2] * (1 - delta)
+            if particle[-2] <= 3:
+                self.particles.pop(i)
+            else:
+                i += 1
+
         self.receive()
 
     def receive(self):
@@ -236,6 +251,13 @@ class GameState(GUIState):
                     uuid = args[1]
                     while snek := self.find_snake(uuid):
                         print("MURDERED SNAKE")
+
+                        for i in range(50):
+                            color = (randint(255 // 2, 255), randint(0, 100), 0)
+                            self.particles.append([Vector2(snek.body[-1][0] * grid_x, snek.body[-1][1] * grid_y),
+                                                   Vector2(random() - .5, random() - .5).normalize() * randint(20, 50),
+                                                   randint(5, 35), color])
+
                         self.snakes.remove(snek)
                         if self.my_snake:
                             if uuid == self.my_snake.uuid:
@@ -271,6 +293,9 @@ class GameState(GUIState):
             for i, pos in enumerate(reversed(snake.body)):
                 pygame.draw.rect(win, snake.colors[i % len(snake.colors)], (pos[0] * grid_x + 1, pos[1] * grid_y + 1, grid_x - 2, grid_y - 2))
 
+        for particle in self.particles:
+            pygame.draw.rect(win, particle[-1], (particle[0].x, particle[0].y, particle[-2], particle[-2]))
+
     def find_snake(self, uuid):
         for snake in self.snakes:
             if snake.uuid == uuid:
@@ -302,7 +327,7 @@ class GameState(GUIState):
         print(f"Created snake \"{snek.name}\" with uuid {snek.uuid}")
 
     def on_quit(self):
-        ...
+        self.connection.connection.close()
 
 
 class JoinState(GUIState):
